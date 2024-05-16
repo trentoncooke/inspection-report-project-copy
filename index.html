@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inspection Report</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <h1>Inspection Report</h1>
+    <form id="report-form" action="http://localhost:3000/submit-form" method="post" enctype="multipart/form-data">
+        <div class="form-row">
+            <label for="companyLogo">Company Logo:</label>
+            <input type="file" id="companyLogo" name="companyLogo">
+        </div>
+        <div class="form-row">
+            <label for="propertyName">Property Name:</label>
+            <input type="text" id="propertyName" name="propertyName">
+        </div>
+        <div class="form-row">
+            <label for="tenants">Tenant(s):</label>
+            <input type="text" id="tenants" name="tenants">
+        </div>
+        <div class="form-row">
+            <label for="inspectionDate">Date:</label>
+            <input type="date" id="inspectionDate" name="inspectionDate">
+        </div>
+        <div class="form-row">
+            <label for="agentInspector">Agent/Inspector:</label>
+            <input type="text" id="agentInspector" name="agentInspector">
+        </div>
+        <div class="form-row">
+            <button type="button" id="addRoomButton">Add Room</button>
+        </div>
+        <div class="form-row">
+            <button type="button" id="quickAddLivingRoom">Living Room</button>
+            <button type="button" id="quickAddKitchen">Kitchen</button>
+            <button type="button" id="quickAddBedroom">Bedroom</button>
+            <button type="button" id="quickAddBathroom">Bathroom</button>
+            <button type="button" id="quickAddDiningRoom">Dining Room</button>
+            <button type="button" id="quickAddLaundryRoom">Laundry Room</button>
+            <button type="button" id="quickAddGarage">Garage</button>
+            <button type="button" id="quickAddEntrywayHallway">Entryway/Hallway</button>
+            <button type="button" id="quickAddOfficeStudy">Office/Study</button>
+            <button type="button" id="quickAddBasement">Basement</button>
+        </div>
+        <table id="roomsTable">
+            <thead>
+                <tr>
+                    <th>Room/Item</th>
+                    <th colspan="3">Move In</th>
+                    <th colspan="3">Move Out</th>
+                    <th>Actions</th>
+                </tr>
+                <tr>
+                    <th></th>
+                    <th>Condition</th>
+                    <th>Comments</th>
+                    <th>Photos</th>
+                    <th>Condition</th>
+                    <th>Comments</th>
+                    <th>Photos</th>
+                </tr>
+            </thead>
+            <tbody id="roomsTableBody">
+            </tbody>
+        </table>
+        <button type="submit">Submit Report</button>
+    </form>
+    <script src="js/script.js"></script>
+</body>
+</html>
