@@ -1,0 +1,11 @@
+# Node.js dependencies
+node_modules/
+
+# Uploads directory (where your uploaded files are stored)
+uploads/
+
+# Operating system files
+.DS_Store
+
+# Other dependencies and package files
+.env
