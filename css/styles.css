@@ -3,7 +3,7 @@ body {
 }
 
 form {
-  max-width: 800px;
+  max-width: 1000px;
   margin: 0 auto;
 }
 
@@ -20,7 +20,8 @@ input[type="text"],
 input[type="date"],
 input[type="file"],
 select {
-  width: 200px;
+  width: 95%;
+  box-sizing: border-box;
 }
 
 #quickAddContainer {
@@ -35,10 +36,16 @@ select {
   margin: 5px;
 }
 
+.table-container {
+  overflow-x: auto;
+}
+
 table {
   width: 100%;
+  max-width: 100%;
   border-collapse: collapse;
   margin-top: 20px;
+  table-layout: auto;
 }
 
 th,
@@ -46,10 +53,36 @@ td {
   border: 1px solid #ddd;
   padding: 10px;
   text-align: left;
+  word-wrap: break-word;
+  overflow: hidden;
 }
 
 th {
   background-color: #f2f2f2;
+}
+
+th,
+td:nth-child(1) {
+  width: 15%;
+}
+
+td:nth-child(2),
+td:nth-child(5) {
+  width: 10%;
+}
+
+td:nth-child(3),
+td:nth-child(6) {
+  width: 20%;
+}
+
+td:nth-child(4),
+td:nth-child(7) {
+  width: 15%;
+}
+
+td:nth-child(8) {
+  width: 10%;
 }
 
 .room-row {
