@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const PDFDocument = require('pdfkit');
+const { PDFDocument: PDFLibDocument, rgb } = require('pdf-lib');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
@@ -74,103 +75,112 @@ app.post('/submit-form', (req, res) => {
                 }
             });
 
-            const doc = new PDFDocument({ size: 'letter', layout: 'landscape', margin: 10 });
+            // Create PDF with pdf-lib for fillable fields
+            const pdfDoc = await PDFLibDocument.create();
+            let page = pdfDoc.addPage([792, 612]);
 
-            res.setHeader('Content-Type', 'application/pdf');
-            res.setHeader('Content-Disposition', 'attachment; filename=report.pdf');
+            let y = page.getHeight() - 30;
 
-            doc.pipe(res);
-
-            // Add company logo and header details on the first page
             if (companyLogo) {
                 const logoPath = path.join(__dirname, companyLogo.path);
-                try {
-                    doc.image(logoPath, 10, 10, { width: 100 });
-                } catch (imageError) {
-                    console.error('Error adding company logo to PDF:', imageError);
-                }
+                const logoBytes = fs.readFileSync(logoPath);
+                const logoImage = await pdfDoc.embedPng(logoBytes);
+                page.drawImage(logoImage, {
+                    x: 10,
+                    y: page.getHeight() - 50 - logoImage.height,
+                    width: logoImage.width,
+                    height: logoImage.height
+                });
+                y = page.getHeight() - 60 - logoImage.height;
             }
 
-            doc.fontSize(18).text('Inspection Report', 110, 10);
+            page.drawText('Inspection Report', { x: 110, y: y, size: 18 });
 
-            doc.fontSize(12).text(`Property Name: ${propertyName}`, 10, 50);
-            doc.text(`Tenant(s): ${tenants}`, 300, 50);
-            doc.text(`Date: ${inspectionDate}`, 10, 70);
-            doc.text(`Agent/Inspector: ${agentInspector}`, 300, 70);
+            y -= 30;
+            page.drawText(`Property Name: ${propertyName}`, { x: 10, y: y, size: 12 });
+            page.drawText(`Tenant(s): ${tenants}`, { x: 300, y: y, size: 12 });
+            y -= 20;
+            page.drawText(`Date: ${inspectionDate}`, { x: 10, y: y, size: 12 });
+            page.drawText(`Agent/Inspector: ${agentInspector}`, { x: 300, y: y, size: 12 });
 
-            const generateTableHeader = () => {
-                doc.fontSize(12);
-                doc.text('Room/Item', 10, y, { width: 100 });
-                doc.text('Move In', 210, y, { width: 180, align: 'center' });
-                doc.text('Move Out', 450, y, { width: 180, align: 'center' });
-                y += 20;
-                doc.text('Condition', 210, y, { width: 60 });
-                doc.text('Comments', 270, y, { width: 100 });
-                doc.text('Photos', 370, y, { width: 60 });
-                doc.text('Condition', 450, y, { width: 60 });
-                doc.text('Comments', 510, y, { width: 100 });
-                doc.text('Photos', 610, y, { width: 60 });
-                y += 10;
-                doc.moveTo(10, y).lineTo(780, y).stroke(); // Draw underline
-                y += 10;
-            };
+            y -= 30;
+            page.drawText('Room/Item', { x: 10, y: y, size: 12 });
+            page.drawText('Move In', { x: 210, y: y, size: 12 });
+            page.drawText('Move Out', { x: 450, y: y, size: 12 });
+            y -= 20;
+            page.drawText('Condition', { x: 210, y: y, size: 12 });
+            page.drawText('Comments', { x: 270, y: y, size: 12 });
+            page.drawText('Photos', { x: 370, y: y, size: 12 });
+            page.drawText('Condition', { x: 450, y: y, size: 12 });
+            page.drawText('Comments', { x: 510, y: y, size: 12 });
+            page.drawText('Photos', { x: 610, y: y, size: 12 });
+            y -= 10;
+            page.drawLine({
+                start: { x: 10, y: y },
+                end: { x: 780, y: y },
+                thickness: 1,
+                color: rgb(0, 0, 0),
+            });
+            y -= 10;
 
-            let y = 100;
-
-            generateTableHeader();
+            const form = pdfDoc.getForm();
 
             // Add room and item details
             for (const room of rooms) {
-                if (y > doc.page.height - 50) {
-                    doc.addPage();
-                    y = 30;
-                    generateTableHeader();
+                if (y < 100) {
+                    page = pdfDoc.addPage([792, 612]);
+                    y = page.getHeight() - 100;
                 }
 
-                doc.fontSize(14).text(`${room.roomName}`, 10, y);
-                y += 20;
+                page.drawText(`${room.roomName}`, { x: 10, y: y, size: 14 });
+                y -= 20;
 
                 for (const item of room.items) {
-                    if (y > doc.page.height - 50) {
-                        doc.addPage();
-                        y = 30;
-                        generateTableHeader();
+                    if (y < 100) {
+                        page = pdfDoc.addPage([792, 612]);
+                        y = page.getHeight() - 100;
                     }
 
-                    doc.fontSize(12).text(item.itemName, 10, y, { width: 100 });
-                    doc.text(item.conditionIn, 210, y, { width: 60 });
-                    doc.text(item.commentsIn, 270, y, { width: 100 });
+                    page.drawText(item.itemName, { x: 10, y: y, size: 12 });
+                    page.drawText(item.conditionIn, { x: 210, y: y, size: 12 });
+                    page.drawText(item.commentsIn, { x: 270, y: y, size: 12 });
 
                     const photosIn = photosInFiles.filter(photo => photo.fieldname === `photosIn-${room.roomName}-${item.itemName}`);
                     if (photosIn.length > 0) {
-                        try {
-                            const resizedImagePath = await resizeImage(photosIn[0].path);
-                            doc.image(resizedImagePath, 370, y, { width: 40, height: 40 });
-                        } catch (photoError) {
-                            console.error('Error adding move-in photo to PDF:', photoError);
-                        }
+                        const resizedImagePath = await resizeImage(photosIn[0].path);
+                        const imageBytes = fs.readFileSync(resizedImagePath);
+                        const image = await pdfDoc.embedPng(imageBytes);
+                        page.drawImage(image, {
+                            x: 370,
+                            y: y - 10,
+                            width: 40,
+                            height: 40,
+                        });
                     }
 
-                    doc.text(item.conditionOut, 450, y, { width: 60 });
-                    doc.text(item.commentsOut, 510, y, { width: 100 });
+                    const conditionOutField = form.createDropdown(`conditionOut-${room.roomName}-${item.itemName}`);
+                    conditionOutField.addOptions(['Select', 'New', 'Good', 'Fair', 'Poor']);
+                    conditionOutField.select(item.conditionOut || 'Select');
+                    conditionOutField.addToPage(page, { x: 450, y: y - 10, width: 50, height: 20 });
 
-                    const photosOut = photosOutFiles.filter(photo => photo.fieldname === `photosOut-${room.roomName}-${item.itemName}`);
-                    if (photosOut.length > 0) {
-                        try {
-                            const resizedImagePath = await resizeImage(photosOut[0].path);
-                            doc.image(resizedImagePath, 610, y, { width: 40, height: 40 });
-                        } catch (photoError) {
-                            console.error('Error adding move-out photo to PDF:', photoError);
-                        }
-                    }
+                    const commentsOutField = form.createTextField(`commentsOut-${room.roomName}-${item.itemName}`);
+                    commentsOutField.setText(item.commentsOut || '');
+                    commentsOutField.addToPage(page, { x: 510, y: y - 10, width: 80, height: 20 });
 
-                    y += 60;
+                    const photosOutField = form.createTextField(`photosOut-${room.roomName}-${item.itemName}`);
+                    photosOutField.setText('Add Photo');
+                    photosOutField.addToPage(page, { x: 610, y: y - 10, width: 50, height: 20 });
+
+                    y -= 60;
                 }
 
-                y += 20;
+                y -= 20;
             }
 
-            doc.end();
+            const pdfBytes = await pdfDoc.save();
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', 'attachment; filename=report.pdf');
+            res.send(Buffer.from(pdfBytes));
 
             const cleanupFiles = async (files) => {
                 for (const file of files) {

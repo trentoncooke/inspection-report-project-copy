@@ -56,6 +56,7 @@ document.addEventListener('DOMContentLoaded', function () {
             <td>${itemName}</td>
             <td>
                 <select name="conditionIn-${roomName}-${itemName}">
+                    <option value="Select">Select</option>
                     <option value="New">New</option>
                     <option value="Good">Good</option>
                     <option value="Fair">Fair</option>
@@ -65,15 +66,10 @@ document.addEventListener('DOMContentLoaded', function () {
             <td><input type="text" name="commentsIn-${roomName}-${itemName}"></td>
             <td><input type="file" name="photosIn-${roomName}-${itemName}"></td>
             <td>
-                <select name="conditionOut-${roomName}-${itemName}">
-                    <option value="New">New</option>
-                    <option value="Good">Good</option>
-                    <option value="Fair">Fair</option>
-                    <option value="Poor">Poor</option>
-                </select>
+                <input type="text" name="conditionOut-${roomName}-${itemName}" readonly>
             </td>
-            <td><input type="text" name="commentsOut-${roomName}-${itemName}"></td>
-            <td><input type="file" name="photosOut-${roomName}-${itemName}"></td>
+            <td><input type="text" name="commentsOut-${roomName}-${itemName}" readonly></td>
+            <td><input type="file" name="photosOut-${roomName}-${itemName}" disabled></td>
             <td><button type="button" class="removeItemButton">Remove</button></td>
         `;
         roomRow.insertAdjacentElement('afterend', itemRow);
