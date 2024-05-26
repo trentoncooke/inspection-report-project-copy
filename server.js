@@ -152,7 +152,7 @@ app.post('/submit-form', (req, res) => {
                         const image = await pdfDoc.embedPng(imageBytes);
                         page.drawImage(image, {
                             x: 370,
-                            y: y - 10,
+                            y: y - 30,
                             width: 40,
                             height: 40,
                         });
@@ -171,7 +171,7 @@ app.post('/submit-form', (req, res) => {
                     photosOutField.setText('Add Photo');
                     photosOutField.addToPage(page, { x: 610, y: y - 10, width: 50, height: 20 });
 
-                    y -= 60;
+                    y -= (photosIn.length > 0) ? 60 : 20; // Adjusting the spacing based on photo presence
                 }
 
                 y -= 20;
